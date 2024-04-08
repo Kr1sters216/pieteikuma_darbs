@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Eventbrite Event Search</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        #header {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 10px solid #0056b3;
+        }
+        #events {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-gap: 1rem;
+            padding: 1rem;
+        }
+        .event {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 5px;
+            transition: transform .2s ease-in-out;
+        }
+        .event:hover {
+            transform: scale(1.03);
+        }
+        #loadEvents {
+            display: block;
+            width: 200px;
+            height: 40px;
+            margin: 20px auto;
+            background-color: #007BFF;
+            color: #fff;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color .2s ease-in-out;
+        }
+        #loadEvents:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>Eventbrite Event Search</h1>
+    </div>
+    <a id="loadEvents">Load Events</a>
+    <div id="events"></div>
+
+    <script>
+        document.getElementById('loadEvents').addEventListener('click', function() {
+        });
+    </script>
+</body>
+</html>
