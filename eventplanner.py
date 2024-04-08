@@ -1,58 +1,46 @@
-from flask import Flask, jsonify, request
-from cryptography.fernet import Fernet
-from flask_mysqldb import MySQL
 import requests
 import json
-import yaml
+from cryptography.fernet import Fernet
 
-app = Flask(__name__)
-
-db = yaml.load(open('db.yaml'), Loader=yaml.FullLoader)
-app.config['MYSQL_HOST'] = db['mysql_host']
-app.config['MYSQL_USER'] = db['mysql_user']
-app.config['MYSQL_PASSWORD'] = db['mysql_password']
-app.config['MYSQL_DB'] = db['mysql_db']
-
-mysql = MySQL(app)
-
+# Generate a key
 key = Fernet.generate_key()
+
+# Create a cipher suite
 cipher_suite = Fernet(key)
 
-@app.route('/events', methods=['GET'])
-def get_events():
-   
-    data = request.args.get('city').encode() 
-    cipher_text = cipher_suite.encrypt(data)
+# Encrypt data
+data = "YOUR_CITY".encode()  # Replace "YOUR_CITY" with your actual city
+cipher_text = cipher_suite.encrypt(data)
+print(f"Cipher Text: {cipher_text}")
 
-    plain_text = cipher_suite.decrypt(cipher_text)
-    url = "https://www.eventbriteapi.com/v3/events/search/"
+# Decrypt data
+plain_text = cipher_suite.decrypt(cipher_text)
+city_name = plain_text.decode()
+print(f"Plain Text: {city_name}")
 
-    headers = {
-        "Authorization": "Bearer CNBUEXWGLRNDGWYGXR5A",
-    }
+# Define the Eventbrite API endpoint
+url = "https://www.eventbriteapi.com/v3/events/search/"
 
-    params = {
-        "location.address": plain_text.decode(),
-        "expand": "venue",
-    }
+headers = {
+    "Authorization": "Bearer CNBUEXWGLRNDGWYGXR5A",  
+}
 
-    response = requests.get(url, headers=headers, params=params)
+params = {
+    "expand": "venue",
+    "location.address": city_name,  # Use the decrypted city name
+}
 
-    data = response.json()
+response = requests.get(url, headers=headers, params=params)
 
-    return jsonify(data["events"])
-@app.route('/add_user', methods=['POST'])
-def add_user():
-    if request.method == 'POST':
-        user_details = request.get_json()
-        name = cipher_suite.encrypt(user_details['name'].encode()).decode()  # Encrypt name
-        email = cipher_suite.encrypt(user_details['email'].encode()).decode()  # Encrypt email
-        location = cipher_suite.encrypt(user_details['location'].encode()).decode()  # Encrypt location
-        cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO users(name, email, location) VALUES(%s, %s, %s)", (name, email, location))
-        mysql.connection.commit()
-        cur.close()
-        return jsonify({'result' : 'User added successfully'})
+data = response.json()
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0',)
+if 'events' in data:
+    for event in data["events"]:
+        print(f"Event Name: {event.get('name', {}).get('text', 'N/A')}")
+        print(f"Event Start: {event.get('start', {}).get('local', 'N/A')}")
+        print(f"Event End: {event.get('end', {}).get('local', 'N/A')}")
+        print(f"Venue: {event.get('venue', {}).get('name', 'N/A')}")
+        print(f"Address: {event.get('venue', {}).get('address', {}).get('address_1', 'N/A')}")
+        print()
+else:
+    print("No events found.")
